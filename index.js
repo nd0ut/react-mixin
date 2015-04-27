@@ -1,6 +1,7 @@
 var mixin = require('smart-mixin');
+var assign = require('object-assign');
 
-var mixinProto = mixin({
+var defaultConstraints = {
   // lifecycle stuff is as you'd expect
   componentDidMount: mixin.MANY,
   componentWillMount: mixin.MANY,
@@ -10,7 +11,12 @@ var mixinProto = mixin({
   componentDidUpdate: mixin.MANY,
   componentWillUnmount: mixin.MANY,
   getChildContext: mixin.MANY_MERGED
-});
+};
+
+function buildMixinProto(constraints) {
+  var mergedConstraints = assign(defaultConstraints, constraints);
+  return mixin(mergedConstraints);
+}
 
 function setDefaultProps(reactMixin) {
   var getDefaultProps = reactMixin.getDefaultProps;
@@ -59,18 +65,20 @@ function mixinClass(reactClass, reactMixin) {
     }
   });
 
-  mixinProto(reactClass.prototype, prototypeMethods);
+  buildMixinProto(reactMixin._constraints)(reactClass.prototype, prototypeMethods);
 
-  mixin({
+  mixin(assign({
     childContextTypes: mixin.MANY_MERGED_LOOSE,
     contextTypes: mixin.MANY_MERGED_LOOSE,
     propTypes: mixin.MANY_MERGED_LOOSE,
     defaultProps: mixin.MANY_MERGED_LOOSE
-  })(reactClass, staticProps);
+  }, reactMixin._constraints))(reactClass, staticProps);
 }
 
 module.exports = (function () {
-  reactMixin = mixinProto;
+  reactMixin = function(proto, mixin) {
+    buildMixinProto(mixin._constraints)(proto, mixin);
+  }
 
   reactMixin.onClass = function(reactClass, mixin) {
     mixinClass(reactClass, mixin)

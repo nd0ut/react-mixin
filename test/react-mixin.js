@@ -162,4 +162,42 @@ describe('react-mixin', function(){
             });
         });
     });
+
+    describe('constraints overrides', function() {
+        it('works with proto', function() {
+            var mixin = {
+                _constraints: {
+                    foo: 'OVERRIDE'
+                },
+
+                foo: 1
+            };
+
+            var proto = {
+                foo: 2
+            }
+
+            reactMixin(proto, mixin);
+
+            expect(proto.foo).to.be.eql(1);
+        });
+
+        it('works with class', function() {
+            var mixin = {
+                _constraints: {
+                    foo: 'OVERRIDE'
+                },
+
+                foo: 1
+            };
+
+            var cls = {
+                foo: 2
+            }
+
+            reactMixin.onClass(cls, mixin);
+
+            expect(cls.foo).to.be.eql(1);
+        });
+    });
 });
